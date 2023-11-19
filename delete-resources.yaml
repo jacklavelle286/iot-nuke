@@ -1,0 +1,70 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: |
+  Creates an IAM policy and Role for EC2 and SG in the nuke account to assume to allow to run the deletion from the ec2 machine
+
+Resources:
+  CloudNukeEC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: "t2.micro"
+      ImageId: "ami-0230bd60aa48260c6"
+      IamInstanceProfile:
+        Ref: AdminAccessInstanceProfile
+      SecurityGroupIds: 
+      - !Ref SSHAccessSG
+      UserData: 
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          wget https://github.com/gruntwork-io/cloud-nuke/releases/download/v0.32.0/cloud-nuke_linux_amd64
+          mv cloud-nuke_linux_amd64 cloud-nuke
+          chmod +x cloud-nuke
+          sudo cp cloud-nuke /usr/bin/
+          cloud-nuke aws --force
+          nuke --force
+
+  SSHAccessSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH access from anywhere
+      SecurityGroupIngress:
+      - FromPort: '22'
+        ToPort: '22'
+        IpProtocol: tcp
+        CidrIp: 0.0.0.0/0
+      Tags:
+      - Key: Name
+        Value: SSHAccessSG
+  AdminAccessInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: AdminRole
+  AdminPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: AdminPolicy
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Action: '*'
+            Resource: '*'
+      Roles:
+      - Ref: AdminRole
+  AdminRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+
+
+
+# STACK WORKS!!!
