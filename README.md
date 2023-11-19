@@ -20,7 +20,8 @@ The solution operates across AWS accounts, with the IoT button and Lambda functi
 ### Prerequisites
 
 - AWS Management and Development accounts under AWS Organizations.
-- An IoT button configured in AWS IoT 1-Click.
+- An IoT button
+- a default VPC in the destination account
 
 ### Steps
 
