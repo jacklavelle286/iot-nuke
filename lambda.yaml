@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  Lambda Function which deploys the stack set of the delete-resources.yaml
+Parameters:
+  BucketWhereCodeLives:
+    Type: String
+    Description: The bucket name where your launch_stack.zip lives
+  TemplateURL:
+    Type: String
+    Description: The Object URL of the delete-resources.yaml file
+  TargetOU:
+    Type: String
+    Description: Target Organizational Unit
+  TargetAccount:
+    Type: String
+    Description: Target account ID
+  TemplateBucket:
+    Type: String
+    Description: The bucket name of your cloudformation template bucket
+
+Resources:
+  LambdaFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: !Ref BucketWhereCodeLives
+        S3Key: launch_stack.zip
+      FunctionName: LaunchStackSet
+      Handler: launch_stack.lambda_handler
+      Role: !GetAtt LambdaRole.Arn
+      Runtime: python3.11
+      Timeout: 60
+      Environment:
+        Variables:
+          TEMPLATE_URL: !Ref TemplateURL
+          TARGET_OU: !Ref TargetOU
+          TARGET_ACCOUNT: !Ref TargetAccount
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: launchstack
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                Resource:
+                  - !Sub 'arn:aws:s3:::${TemplateBucket}/delete-resources.yaml'
+                  - !Sub 'arn:aws:s3:::${TemplateBucket}'
+              - Effect: Allow
+                Action:
+                  - cloudformation:CreateStackSet
+                  - cloudformation:CreateStackInstances
+                  - cloudformation:DescribeStacks
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - iam:GetRole
+                  - iam:CreateRole
+                  - iam:AttachRolePolicy
+                Resource: '*'
+              - Effect: Allow
+                Action:
+                  - ec2:*
+                Resource: '*'
