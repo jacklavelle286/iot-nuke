@@ -1,0 +1,24 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: 
+  This template launches the following components as part of the IoT cloud-nuke solution
+  - An S3 Bucket which will contain the second cloudformation template 
+  - An S3 Bucket which will contain the lambda function (launches the second cloudformation template in the dev account)
+
+Parameters:
+  LambdaCodeBucket:
+    Type: String
+    Description: Bucket name for the bucket which will be used to house the lambda zip file (launch-stack.zip)
+  CloudFormationBucket:
+    Type: String
+    Description: Bucket name for the bucket which will be used to house the cloudformation templates (first_temlate.yaml, lambda.yaml)
+Resources:
+  CloudFormationTemplateBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref CloudFormationBucket
+      
+  LambdaTemplateBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref LambdaCodeBucket
+  
