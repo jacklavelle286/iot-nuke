@@ -33,9 +33,10 @@ The solution operates across AWS accounts, with the IoT button and Lambda functi
      - An S3 Bucket for the second CloudFormation template (`delete-resources.yaml`).
      - An S3 Bucket for the Lambda function's code (`launch-stack.zip`).
 
-2. **Prepare and Upload Lambda Function**:
-   - Zip the `launch-stack.py` file.
+2. **Prepare and Upload Lambda Function and cloudformation templates**:
+   - Zip the `launch-stack.py` file
    - Upload the zip file to the code S3 bucket created in step 1.
+   - upload the two cloudformation templates (`lambda.yaml` and `delete resources.yaml` to the cloudformation bucket you just created.)
 
 3. **Deploy the Second Stack**:
    - Use the S3 URL of `lambda.yaml` to deploy the second CloudFormation stack.
